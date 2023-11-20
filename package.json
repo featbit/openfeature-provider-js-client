@@ -1,0 +1,20 @@
+{
+  "name": "featbit-openfeature-provider",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@openfeature/web-sdk": "^0.4.5",
+    "featbit-js-client-sdk": "^1.0.4",
+    "lodash": "^4.17.21"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.14.201"
+  }
+}
