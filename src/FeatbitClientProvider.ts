@@ -39,7 +39,7 @@ function wrongTypeResult<T>(value: T): ResolutionDetails<T> {
 }
 
 // implement the provider interface
-class FeatbitClientProvider implements Provider {
+export class FeatbitClientProvider implements Provider {
   // Adds runtime validation that the provider is used with the expected SDK
   public readonly runsOn = "client";
   readonly metadata = {
@@ -87,9 +87,11 @@ class FeatbitClientProvider implements Provider {
     if (this.featbitClient.variation(flagKey, defaultValue) !== undefined) {
       return translateResult(
         this.featbitClient.variation(flagKey, defaultValue),
-        StandardResolutionReasons.TARGETING_MATCH
+        StandardResolutionReasons.TARGETING_MATCH,
+        logger
       );
     } else {
+      logger.error(ErrorCode.GENERAL);
       return wrongTypeResult(defaultValue);
     }
   }
@@ -104,9 +106,11 @@ class FeatbitClientProvider implements Provider {
     if (this.featbitClient.variation(flagKey, defaultValue) !== undefined) {
       return translateResult(
         this.featbitClient.variation(flagKey, defaultValue),
-        StandardResolutionReasons.TARGETING_MATCH
+        StandardResolutionReasons.TARGETING_MATCH,
+        logger
       );
     } else {
+      logger.error(ErrorCode.GENERAL);
       return wrongTypeResult(defaultValue);
     }
   }
@@ -121,9 +125,11 @@ class FeatbitClientProvider implements Provider {
     if (this.featbitClient.variation(flagKey, defaultValue) !== undefined) {
       return translateResult(
         this.featbitClient.variation(flagKey, defaultValue),
-        StandardResolutionReasons.TARGETING_MATCH
+        StandardResolutionReasons.TARGETING_MATCH,
+        logger
       );
     } else {
+      logger.error(ErrorCode.GENERAL);
       return wrongTypeResult(defaultValue);
     }
   }
@@ -138,9 +144,11 @@ class FeatbitClientProvider implements Provider {
     if (this.featbitClient.variation(flagKey, defaultValue) !== undefined) {
       return translateResult(
         this.featbitClient.variation(flagKey, defaultValue),
-        StandardResolutionReasons.TARGETING_MATCH
+        StandardResolutionReasons.TARGETING_MATCH,
+        logger
       );
     } else {
+      logger.error(ErrorCode.GENERAL);
       return wrongTypeResult(defaultValue);
     }
   }
