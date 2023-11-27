@@ -1,4 +1,4 @@
-import { FeatbitLogger } from "./FeatbitLogger";
+import { FeatbitLogger } from "./featbit-logger";
 
 export default class TestLogger implements FeatbitLogger {
   public logs: string[] = [];
