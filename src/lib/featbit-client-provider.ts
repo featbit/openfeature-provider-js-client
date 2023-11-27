@@ -1,9 +1,6 @@
 import {
   ErrorCode,
   EvaluationContext,
-  FlagValue,
-  GeneralError,
-  Hook,
   JsonValue,
   Logger,
   OpenFeatureEventEmitter,
@@ -18,11 +15,10 @@ import { IOption, IUser } from "featbit-js-client-sdk/esm/types";
 import {
   FeatbitProviderInitializeOptions,
   FeatbitProviderOptions,
-} from "./FeatbitProviderOptions";
-import { FeatbitLogger, featbitBasicLogger } from "./FeatbitLogger";
-import { translateContext } from "./translateContext";
-import _ from "lodash";
-import translateResult from "./FeatbitResultConverter";
+} from "../lib/featbit-provider-options";
+import { FeatbitLogger, featbitBasicLogger } from "../lib/featbit-logger";
+import { translateContext } from "../lib/translate-context";
+import translateResult from "../lib/featbit-result-converter";
 
 /**
  * Create a ResolutionDetails for an evaluation that produced a type different
@@ -66,6 +62,7 @@ export class FeatbitClientProvider implements Provider {
       ...featbitProviderInitializeOptions
     }: FeatbitProviderInitializeOptions
   ) {
+    this.featbitClient = new FB();
     if (logger) {
       this.logger = logger;
     } else {
@@ -156,12 +153,11 @@ export class FeatbitClientProvider implements Provider {
   events?: OpenFeatureEventEmitter | undefined;
 
   initialize?(context?: EvaluationContext | undefined): Promise<void> {
-    let featbitProviderOptions: FeatbitProviderOptions | undefined;
     let _user: IUser | undefined;
     if (context !== undefined) {
       _user = this.translateContext(context);
     }
-    featbitProviderOptions = Object.assign(
+    const featbitProviderOptions: FeatbitProviderOptions = Object.assign(
       {},
       _user,
       this.featbitProviderInitializeOptions,
@@ -170,7 +166,6 @@ export class FeatbitClientProvider implements Provider {
       }
     );
     if (context?.targetingKey && this.envKey) {
-      this.featbitClient = new FB();
       this.featbitClient.init(featbitProviderOptions as IOption);
       return this.featbitClient.waitUntilReady().then(() => {
         this.status = ProviderStatus.READY;
@@ -185,7 +180,12 @@ export class FeatbitClientProvider implements Provider {
     newContext: EvaluationContext
   ): Promise<void> {
     // update the context on the featbit client, this is so it does not have to be checked on each evaluation
-    await this.featbitClient.identify(this.translateContext(newContext)!);
+    const _user: IUser | undefined = this.translateContext(newContext);
+    if (_user) {
+      this.featbitClient.identify(_user);
+    } else {
+      return Promise.reject(new Error("Something went wrong"));
+    }
   }
 
   onClose?(): Promise<void> {

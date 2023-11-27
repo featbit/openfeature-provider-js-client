@@ -16,7 +16,7 @@
 
 import { IFeatureFlag, IOption, IUser } from "featbit-js-client-sdk/esm/types";
 import { Logger } from "@openfeature/web-sdk";
-import { FeatbitLogger } from "./FeatbitLogger";
+import { FeatbitLogger } from "./featbit-logger";
 
 /**
  * Options for the {@link FeatbitClientProvider}.
