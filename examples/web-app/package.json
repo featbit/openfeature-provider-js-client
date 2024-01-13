@@ -1,0 +1,17 @@
+{
+  "name": "featbit-provider-example",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "rimraf dist && webpack --mode production"
+  },
+  "dependencies": {
+    "@featbit/openfeature-provider-js-client": "file:../../src",
+    "@openfeature/web-sdk": "^0.4.9",
+    "featbit-js-client-sdk": "^1.0.4"
+  },
+  "devDependencies": {
+    "ts-loader": "^9.5.1",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "nodenext",
+    "noImplicitAny": false,
+    "target": "es5",
+    "module": "NodeNext",
+    "lib": [ "es2019", "dom" ],
+    "allowJs": true,
+    "sourceMap": true,
+    "declaration": true,
+    "skipLibCheck": true
+  }
+}

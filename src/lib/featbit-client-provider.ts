@@ -16,7 +16,7 @@ import {
   FeatbitProviderInitializeOptions,
   FeatbitProviderOptions,
 } from "../lib/featbit-provider-options";
-import { FeatbitLogger, featbitBasicLogger } from "../lib/featbit-logger";
+import { FeatbitLogger, featbitBasicLogger } from "./featbit-logger";
 import { translateContext } from "../lib/translate-context";
 import translateResult from "../lib/featbit-result-converter";
 
@@ -56,11 +56,10 @@ export class FeatbitClientProvider implements Provider {
   }
 
   constructor(
-    private readonly envKey: string,
-    {
-      logger,
-      ...featbitProviderInitializeOptions
-    }: FeatbitProviderInitializeOptions
+    options: FeatbitProviderInitializeOptions,
+    logger?: FeatbitLogger
+
+
   ) {
     this.featbitClient = new FB();
     if (logger) {

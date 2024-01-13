@@ -1,22 +1,29 @@
 {
-	"extends": "../../../tsconfig.base.json",
+	"extends": "./node_modules/gts/tsconfig-google.json",
 	"compilerOptions": {
+		"outDir": "dist",
+		"moduleResolution": "node",
 		"module": "ES6",
+		"target": "es5",
+		"lib": [ "es2019", "dom" ],
 		"forceConsistentCasingInFileNames": true,
 		"strict": true,
 		"noImplicitOverride": true,
 		"noPropertyAccessFromIndexSignature": true,
 		"noImplicitReturns": true,
-		"noFallthroughCasesInSwitch": true
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitAny": false,
+		"declaration": true,
+		"sourceMap": true,
+		"skipLibCheck": true
 	},
-	"files": [],
-	"include": [],
-	"references": [
-		{
-			"path": "./tsconfig.lib.json"
-		},
-		{
-			"path": "./tsconfig.spec.json"
-		}
+	"include": [
+		"src/**/*.ts",
+		"test/**/*.ts"
+	],
+	"exclude": [
+		"jest.config.js",
+		"src/**/*.spec.ts",
+		"src/**/*.test.ts"
 	]
 }

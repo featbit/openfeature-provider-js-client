@@ -1,17 +1,41 @@
 {
-  "name": "@openfeature/featbit-client-provider",
-  "version": "0.0.1",
-  "dependencies": {
-    "tslib": "^2.3.0"
+  "name": "@featbit/openfeature-provider-js-client",
+  "version": "1.0.0",
+  "description": "A OpenFeature provider implementation for the FeatBit js client SDK",
+  "main": "./dis/index.js",
+  "typings": "./dis/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/featbit/featbit-js-client-openfeature-provider.git"
   },
-  "main": "./src/index.js",
-  "typings": "./src/index.d.ts",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/featbit/featbit-js-client-openfeature-provider/issues"
+  },
+  "homepage": "https://github.com/featbit/featbit-js-client-openfeature-provider#readme",
   "scripts": {
-    "publish-if-not-exists": "cp $NPM_CONFIG_USERCONFIG .npmrc && if [ \"$(npm show $npm_package_name@$npm_package_version version)\" = \"$(npm run current-version -s)\" ]; then echo 'already published, skipping'; else npm publish --access public; fi",
-    "current-version": "echo $npm_package_version"
+    "build": "rimraf dist && tsc",
+    "test": "jest",
+    "prepublishOnly": "npm run build"
   },
   "peerDependencies": {
     "@openfeature/web-sdk": ">=0.4.0",
     "featbit-js-client-sdk": "^1.0.4"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.7",
+    "@babel/preset-env": "^7.23.8",
+    "@openfeature/web-sdk": ">=0.4.0",
+    "@testing-library/jest-dom": "^6.2.0",
+    "@types/jest": "^29.5.11",
+    "babel-jest": "^29.7.0",
+    "featbit-js-client-sdk": "^1.0.4",
+    "gts": "^3.1.0",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
   }
 }
