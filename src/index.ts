@@ -1,1 +1,3 @@
-export * from "./lib/featbit-client-provider";
+import { FeatbitClientProvider } from "./FeatbitClientProvider";
+
+export { FeatbitClientProvider };
