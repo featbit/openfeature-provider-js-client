@@ -7,11 +7,19 @@
   "main": "./src/index.js",
   "typings": "./src/index.d.ts",
   "scripts": {
-    "publish-if-not-exists": "cp $NPM_CONFIG_USERCONFIG .npmrc && if [ \"$(npm show $npm_package_name@$npm_package_version version)\" = \"$(npm run current-version -s)\" ]; then echo 'already published, skipping'; else npm publish --access public; fi",
+    "build": "tsc --build",
     "current-version": "echo $npm_package_version"
   },
   "peerDependencies": {
     "@openfeature/web-sdk": ">=0.4.0",
     "featbit-js-client-sdk": "^1.0.4"
+  },
+  "devDependencies": {
+    "@openfeature/web-sdk": "^0.4.0",
+    "@types/jest": "^29.5.11",
+    "featbit-js-client-sdk": "^1.0.4",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.3"
   }
 }

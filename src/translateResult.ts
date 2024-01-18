@@ -1,5 +1,4 @@
 import {
-  ErrorCode,
   Logger,
   ResolutionDetails,
   ResolutionReason,

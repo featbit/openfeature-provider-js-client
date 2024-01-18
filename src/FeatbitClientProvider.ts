@@ -5,6 +5,7 @@ import {
   Logger,
   OpenFeatureEventEmitter,
   Provider,
+  ProviderEvents,
   ProviderStatus,
   ResolutionDetails,
   StandardResolutionReasons,
@@ -12,13 +13,10 @@ import {
 
 import { FB } from "featbit-js-client-sdk";
 import { IOption, IUser } from "featbit-js-client-sdk/esm/types";
-import {
-  FeatbitProviderInitializeOptions,
-  FeatbitProviderOptions,
-} from "../lib/featbit-provider-options";
-import { FeatbitLogger, featbitBasicLogger } from "../lib/featbit-logger";
-import { translateContext } from "../lib/translate-context";
-import translateResult from "../lib/featbit-result-converter";
+
+import FeatbitLogger from "./FeatbitLogger";
+import { translateContext } from "./translateContext";
+import translateResult from "./translateResult";
 
 /**
  * Create a ResolutionDetails for an evaluation that produced a type different
@@ -41,44 +39,66 @@ export class FeatbitClientProvider implements Provider {
   readonly metadata = {
     name: "featbit-client-provider",
   } as const;
-  private readonly featbitProviderInitializeOptions:
-    | FeatbitProviderInitializeOptions
-    | undefined;
-  private readonly logger: FeatbitLogger;
-  private featbitClient: FB;
 
-  private _status?: ProviderStatus | undefined;
-  set status(status: ProviderStatus | undefined) {
-    this.status = status;
-  }
-  get status(): ProviderStatus | undefined {
-    return this._status;
-  }
+  private readonly featbitLogger: FeatbitLogger;
+  private readonly featbitClient: FB;
+  private readonly clientConstructionError: any;
 
-  constructor(
-    private readonly envKey: string,
-    {
-      logger,
-      ...featbitProviderInitializeOptions
-    }: FeatbitProviderInitializeOptions
-  ) {
-    this.featbitClient = new FB();
-    if (logger) {
-      this.logger = logger;
-    } else {
-      this.logger = featbitBasicLogger;
+  private _status?: ProviderStatus = ProviderStatus.NOT_READY;
+  public readonly events = new OpenFeatureEventEmitter();
+  constructor(options: IOption, logger?: FeatbitLogger) {
+    this.featbitLogger = logger;
+    try {
+      this.featbitClient = new FB();
+      this.featbitClient.init(options);
+      this.featbitClient.on("update", ({ key }: { key: string }) =>
+        this.events.emit(ProviderEvents.ConfigurationChanged, {
+          flagsChanged: [key],
+        })
+      );
+    } catch (err) {
+      this.clientConstructionError = err;
+      this.featbitLogger.error(
+        `Encountered unrecoverable initialization error, ${err}`
+      );
+      this._status = ProviderStatus.ERROR;
     }
-    this.featbitProviderInitializeOptions = {
-      ...featbitProviderInitializeOptions,
-      logger: this.logger,
-    };
   }
 
+  async initialize(context?: EvaluationContext | undefined): Promise<void> {
+    if (!this.featbitClient) {
+      // The client could not be constructed.
+      if (this.clientConstructionError) {
+        throw this.clientConstructionError;
+      }
+      throw new Error("Unknown problem encountered during initialization");
+    }
+    try {
+      await this.featbitClient.waitUntilReady();
+      this._status = ProviderStatus.READY;
+    } catch (error) {
+      this._status = ProviderStatus.ERROR;
+      throw error;
+    }
+  }
+
+  /**
+   * Determines the boolean variation of a feature flag for a context, along with information about
+   * how it was calculated.
+   *
+   * If the flag does not evaluate to a boolean value, then the defaultValue will be returned.
+   *
+   * @param flagKey The unique key of the feature flag.
+   * @param defaultValue The default value of the flag, to be used if the value is not available
+   *   from FeatBit.
+   * @param context The context requesting the flag.
+   * @returns A promise which will resolve to a ResolutionDetails.
+   */
   resolveBooleanEvaluation(
     flagKey: string,
     defaultValue: boolean,
     context: EvaluationContext,
-    logger: FeatbitLogger
+    logger: Logger
   ): ResolutionDetails<boolean> {
     // code to evaluate a boolean
     if (this.featbitClient.variation(flagKey, defaultValue) !== undefined) {
@@ -150,31 +170,6 @@ export class FeatbitClientProvider implements Provider {
     }
   }
 
-  events?: OpenFeatureEventEmitter | undefined;
-
-  initialize?(context?: EvaluationContext | undefined): Promise<void> {
-    let _user: IUser | undefined;
-    if (context !== undefined) {
-      _user = this.translateContext(context);
-    }
-    const featbitProviderOptions: FeatbitProviderOptions = Object.assign(
-      {},
-      _user,
-      this.featbitProviderInitializeOptions,
-      {
-        envkey: this.envKey,
-      }
-    );
-    if (context?.targetingKey && this.envKey) {
-      this.featbitClient.init(featbitProviderOptions as IOption);
-      return this.featbitClient.waitUntilReady().then(() => {
-        this.status = ProviderStatus.READY;
-      });
-    } else {
-      return Promise.reject(new Error("Something went wrong"));
-    }
-  }
-
   async onContextChange(
     _oldContext: EvaluationContext,
     newContext: EvaluationContext
@@ -187,14 +182,18 @@ export class FeatbitClientProvider implements Provider {
       return Promise.reject(new Error("Something went wrong"));
     }
   }
-
-  onClose?(): Promise<void> {
+  public getClient(): FB {
+    return this.featbitClient;
+  }
+  get status(): ProviderStatus | undefined {
+    return this._status;
+  }
+  async onClose(): Promise<void> {
     // code to shut down your
-    return this.featbitClient.logout().then(() => {
-      this.status = ProviderStatus.NOT_READY;
-    });
+    await this.featbitClient.logout();
+    this._status = ProviderStatus.NOT_READY;
   }
   private translateContext(context: EvaluationContext) {
-    return translateContext(context, this.logger);
+    return translateContext(context, this.featbitLogger);
   }
 }
