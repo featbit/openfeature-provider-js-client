@@ -3,10 +3,11 @@
 		"src/**/*"
 	],
 	"compilerOptions": {
-		"module": "ESNext",
+		"module": "NodeNext",
 		"esModuleInterop": true,
-		"target": "ESNext",
-		"moduleResolution": "Node",
+		"target": "es5",
+		"moduleResolution": "NodeNext",
+		"lib": [ "es2019", "dom" ],
 		"sourceMap": true,
 		"outDir": "dist",
 		"rootDir": "src",
