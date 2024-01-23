@@ -6,15 +6,15 @@
   "typings": "./dist/index.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/featbit/featbit-js-client-openfeature-provider.git"
+    "url": "git+https://github.com/featbit/openfeature-provider-js-client"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/featbit/featbit-js-client-openfeature-provider/issues"
+    "url": "https://github.com/featbit/openfeature-provider-js-client/issues"
   },
-  "homepage": "https://github.com/featbit/featbit-js-client-openfeature-provider#readme",
+  "homepage": "https://github.com/featbit/openfeature-provider-js-client#readme",
   "scripts": {
     "build": "rimraf dist && tsc",
     "test": "jest",
