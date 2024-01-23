@@ -1,5 +1,4 @@
-# Web example
-
+# Web example for @featbit/openfeature-provider-js-client
 
 ## Get started
 
