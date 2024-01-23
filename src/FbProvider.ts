@@ -144,7 +144,6 @@ export class FbProvider implements Provider {
     _oldContext: EvaluationContext,
     newContext: EvaluationContext
   ): Promise<void> {
-    console.log('onchange');
     // update the context on the featbit client, this is so it does not have to be checked on each evaluation
     const _user: IUser | undefined = translateContext(newContext);
     if (_user) {
