@@ -2,12 +2,12 @@
   "name": "featbit-provider-example",
   "version": "1.0.0",
   "scripts": {
-    "build": "rimraf dist && webpack --mode production && rimraf dist"
+    "build": "rimraf lib && webpack --mode production && rimraf dist"
   },
   "dependencies": {
     "@featbit/openfeature-provider-js-client": "file:../../",
     "@openfeature/web-sdk": "^0.4.9",
-    "featbit-js-client-sdk": "^1.0.4"
+    "featbit-js-client-sdk": "^1.0.6"
   },
   "devDependencies": {
     "rimraf": "^5.0.5",

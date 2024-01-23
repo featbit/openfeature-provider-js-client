@@ -31,7 +31,7 @@ const baseConfig = {
 
 const config = {
     ...baseConfig, output: {
-        path: path.resolve(__dirname, 'umd'),
+        path: path.resolve(__dirname, 'lib'),
         filename: `[name].js`,
         libraryTarget: 'umd',
         umdNamedDefine: true,

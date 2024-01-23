@@ -1,19 +1,17 @@
 import {
-  Logger,
   ResolutionDetails,
   ResolutionReason,
 } from "@openfeature/web-sdk";
-import { FeatureFlagValue } from "featbit-js-client-sdk/esm/types";
+import { FeatureFlagValue, logger } from "featbit-js-client-sdk";
 
 export default function translateResult<T>(
   result: FeatureFlagValue,
   reason: ResolutionReason,
-  logger: Logger
 ): ResolutionDetails<T> {
   const resolution: ResolutionDetails<T> = {
     value: result,
     reason: reason,
   };
-  logger.info(resolution.reason);
+  logger.logDebug(resolution.reason);
   return resolution;
 }

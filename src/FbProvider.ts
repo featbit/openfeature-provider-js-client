@@ -2,7 +2,6 @@ import {
   ErrorCode,
   EvaluationContext,
   JsonValue,
-  Logger,
   OpenFeatureEventEmitter,
   Provider,
   ProviderEvents,
@@ -11,10 +10,8 @@ import {
   StandardResolutionReasons,
 } from "@openfeature/web-sdk";
 
-import { FB } from "featbit-js-client-sdk";
-import { IOption, IUser } from "featbit-js-client-sdk/esm/types";
+import { FB, fbClient, IOption, IUser, logger } from "featbit-js-client-sdk";
 
-import FeatbitLogger from "./FeatbitLogger";
 import { translateContext } from "./translateContext";
 import translateResult from "./translateResult";
 
@@ -33,32 +30,30 @@ function wrongTypeResult<T>(value: T): ResolutionDetails<T> {
 }
 
 // implement the provider interface
-export class FeatbitClientProvider implements Provider {
+export class FbProvider implements Provider {
   // Adds runtime validation that the provider is used with the expected SDK
   public readonly runsOn = "client";
   readonly metadata = {
     name: "featbit-client-provider",
   } as const;
 
-  private readonly featbitLogger: FeatbitLogger;
-  private readonly featbitClient: FB;
+  private readonly fbClient: FB;
   private readonly clientConstructionError: any;
 
   private _status?: ProviderStatus = ProviderStatus.NOT_READY;
   public readonly events = new OpenFeatureEventEmitter();
-  constructor(options: IOption, logger?: FeatbitLogger) {
-    this.featbitLogger = logger;
+  constructor(options: IOption) {
     try {
-      this.featbitClient = new FB();
-      this.featbitClient.init(options);
-      this.featbitClient.on("update", ({ key }: { key: string }) =>
+      this.fbClient = fbClient;
+      this.fbClient.init(options);
+      this.fbClient.on('ff_update', ({ key }: { key: string }) =>
         this.events.emit(ProviderEvents.ConfigurationChanged, {
           flagsChanged: [key],
         })
       );
     } catch (err) {
       this.clientConstructionError = err;
-      this.featbitLogger.error(
+      logger.log(
         `Encountered unrecoverable initialization error, ${err}`
       );
       this._status = ProviderStatus.ERROR;
@@ -66,15 +61,23 @@ export class FeatbitClientProvider implements Provider {
   }
 
   async initialize(context?: EvaluationContext | undefined): Promise<void> {
-    if (!this.featbitClient) {
+    if (!this.fbClient) {
       // The client could not be constructed.
       if (this.clientConstructionError) {
         throw this.clientConstructionError;
       }
       throw new Error("Unknown problem encountered during initialization");
     }
+
+    if (context) {
+      const _user: IUser | undefined = translateContext(context);
+      if (_user) {
+        this.fbClient.identify(_user);
+      }
+    }
+
     try {
-      await this.featbitClient.waitUntilReady();
+      await this.fbClient.waitUntilReady();
       this._status = ProviderStatus.READY;
     } catch (error) {
       this._status = ProviderStatus.ERROR;
@@ -91,81 +94,66 @@ export class FeatbitClientProvider implements Provider {
    * @param flagKey The unique key of the feature flag.
    * @param defaultValue The default value of the flag, to be used if the value is not available
    *   from FeatBit.
-   * @param context The context requesting the flag.
    * @returns A promise which will resolve to a ResolutionDetails.
    */
   resolveBooleanEvaluation(
     flagKey: string,
-    defaultValue: boolean,
-    context: EvaluationContext,
-    logger: Logger
+    defaultValue: boolean
   ): ResolutionDetails<boolean> {
     // code to evaluate a boolean
-    if (this.featbitClient.variation(flagKey, defaultValue) !== undefined) {
+    if (this.fbClient.variation(flagKey, defaultValue) !== undefined) {
       return translateResult(
-        this.featbitClient.variation(flagKey, defaultValue),
-        StandardResolutionReasons.TARGETING_MATCH,
-        logger
+        this.fbClient.variation(flagKey, defaultValue),
+        StandardResolutionReasons.TARGETING_MATCH
       );
     } else {
-      logger.error(ErrorCode.GENERAL);
+      logger.log(ErrorCode.GENERAL);
       return wrongTypeResult(defaultValue);
     }
   }
 
   resolveStringEvaluation(
     flagKey: string,
-    defaultValue: string,
-    context: EvaluationContext,
-    logger: Logger
+    defaultValue: string
   ): ResolutionDetails<string> {
-    // code to evaluate a boolean
-    if (this.featbitClient.variation(flagKey, defaultValue) !== undefined) {
+    if (this.fbClient.variation(flagKey, defaultValue) !== undefined) {
       return translateResult(
-        this.featbitClient.variation(flagKey, defaultValue),
-        StandardResolutionReasons.TARGETING_MATCH,
-        logger
+        this.fbClient.variation(flagKey, defaultValue),
+        StandardResolutionReasons.TARGETING_MATCH
       );
     } else {
-      logger.error(ErrorCode.GENERAL);
+      logger.log(ErrorCode.GENERAL);
       return wrongTypeResult(defaultValue);
     }
   }
 
   resolveNumberEvaluation(
     flagKey: string,
-    defaultValue: number,
-    context: EvaluationContext,
-    logger: Logger
+    defaultValue: number
   ): ResolutionDetails<number> {
-    // code to evaluate a boolean
-    if (this.featbitClient.variation(flagKey, defaultValue) !== undefined) {
+    if (this.fbClient.variation(flagKey, defaultValue) !== undefined) {
       return translateResult(
-        this.featbitClient.variation(flagKey, defaultValue),
+        this.fbClient.variation(flagKey, defaultValue),
         StandardResolutionReasons.TARGETING_MATCH,
-        logger
       );
     } else {
-      logger.error(ErrorCode.GENERAL);
+      logger.log(ErrorCode.GENERAL);
       return wrongTypeResult(defaultValue);
     }
   }
 
   resolveObjectEvaluation<T extends JsonValue>(
     flagKey: string,
-    defaultValue: T,
-    context: EvaluationContext,
-    logger: Logger
+    defaultValue: T
   ): ResolutionDetails<T> {
     // code to evaluate a boolean
-    if (this.featbitClient.variation(flagKey, defaultValue) !== undefined) {
+    if (this.fbClient.variation(flagKey, defaultValue) !== undefined) {
       return translateResult(
-        this.featbitClient.variation(flagKey, defaultValue),
-        StandardResolutionReasons.TARGETING_MATCH,
-        logger
+        this.fbClient.variation(flagKey, defaultValue),
+        StandardResolutionReasons.TARGETING_MATCH
       );
     } else {
-      logger.error(ErrorCode.GENERAL);
+      logger.log(ErrorCode.GENERAL);
       return wrongTypeResult(defaultValue);
     }
   }
@@ -175,25 +163,25 @@ export class FeatbitClientProvider implements Provider {
     newContext: EvaluationContext
   ): Promise<void> {
     // update the context on the featbit client, this is so it does not have to be checked on each evaluation
-    const _user: IUser | undefined = this.translateContext(newContext);
+    const _user: IUser | undefined = translateContext(newContext);
     if (_user) {
-      this.featbitClient.identify(_user);
+      await this.fbClient.identify(_user);
     } else {
       return Promise.reject(new Error("Something went wrong"));
     }
   }
+
   public getClient(): FB {
-    return this.featbitClient;
+    return this.fbClient;
   }
+
   get status(): ProviderStatus | undefined {
     return this._status;
   }
+
   async onClose(): Promise<void> {
     // code to shut down your
-    await this.featbitClient.logout();
+    await this.fbClient.logout();
     this._status = ProviderStatus.NOT_READY;
-  }
-  private translateContext(context: EvaluationContext) {
-    return translateContext(context, this.featbitLogger);
   }
 }

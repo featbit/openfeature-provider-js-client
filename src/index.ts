@@ -1,3 +1,3 @@
-import { FeatbitClientProvider } from "./FeatbitClientProvider";
+import { FbProvider } from "./FbProvider";
 
-export { FeatbitClientProvider };
+export { FbProvider };

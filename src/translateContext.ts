@@ -1,27 +1,26 @@
-import { IUser, ICustomizedProperty } from "featbit-js-client-sdk/src/types";
-import { EvaluationContext, Logger } from "@openfeature/web-sdk";
+import { IUser, ICustomizedProperty, logger } from "featbit-js-client-sdk";
+import { EvaluationContext } from "@openfeature/web-sdk";
 
 const builtInKeys = ["key", "name", "custom", "targetingKey"];
 
 export function translateContext(
-  evaluationContext: EvaluationContext,
-  featbitLogger: Logger
+  evaluationContext: EvaluationContext
 ): IUser | undefined {
-  const custom: ICustomizedProperty[] = (evaluationContext.custom ||
-    []) as unknown as ICustomizedProperty[];
-  const name = (evaluationContext.name as string) || "";
-  const keyId = (evaluationContext.targetingKey as string) || "";
-  if (keyId === "") {
-    featbitLogger.error(
-      "The EvaluationContext must contain either a 'targetingKey' or a 'key' and the " +
+  const custom: ICustomizedProperty[] = (evaluationContext.custom || []) as unknown as ICustomizedProperty[];
+  const name = evaluationContext.name as string || "";
+  const key: string = evaluationContext.targetingKey || evaluationContext.key as string || evaluationContext.keyId as string || '';
+
+  if (key === "") {
+    logger.log(
+      "The EvaluationContext must contain either a 'targetingKey' or a 'key' or a 'keyId' and the " +
         "type must be a string."
     );
   }
-  // 初始化一个基本的IUser对象
+
   const user: IUser = {
-    keyId: keyId,
+    keyId: key,
     name: name,
-    customizedProperties: undefined,
+    customizedProperties: [],
   };
 
   if (custom) {
@@ -46,7 +45,7 @@ export function translateContext(
     }
   }
 
-  // 从 evalContext 中添加额外的属性到 custom
+  // add properties from evalContext to custom
   Object.entries(evaluationContext).forEach(([key, value]) => {
     if (!builtInKeys.includes(key)) {
       user.customizedProperties.push({
