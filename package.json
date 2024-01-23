@@ -15,6 +15,10 @@
     "url": "https://github.com/featbit/openfeature-provider-js-client/issues"
   },
   "homepage": "https://github.com/featbit/openfeature-provider-js-client#readme",
+  "files": [
+    "/dist",
+    "/src"
+  ],
   "scripts": {
     "build": "rimraf dist && tsc",
     "test": "jest",
