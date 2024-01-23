@@ -3,9 +3,7 @@ import { EvaluationContext } from "@openfeature/web-sdk";
 
 const builtInKeys = ["key", "name", "custom", "targetingKey"];
 
-export function translateContext(
-  evaluationContext: EvaluationContext
-): IUser | undefined {
+export function translateContext(evaluationContext: EvaluationContext): IUser | undefined {
   const custom: ICustomizedProperty[] = (evaluationContext.custom || []) as unknown as ICustomizedProperty[];
   const name = evaluationContext.name as string || "";
   const key: string = evaluationContext.targetingKey || evaluationContext.key as string || evaluationContext.keyId as string || '';
@@ -54,5 +52,6 @@ export function translateContext(
       });
     }
   });
+
   return user;
 }

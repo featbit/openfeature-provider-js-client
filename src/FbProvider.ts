@@ -53,27 +53,18 @@ export class FbProvider implements Provider {
       );
     } catch (err) {
       this.clientConstructionError = err;
-      logger.log(
-        `Encountered unrecoverable initialization error, ${err}`
-      );
+      logger.log(`Encountered unrecoverable initialization error, ${err}`);
       this._status = ProviderStatus.ERROR;
     }
   }
 
-  async initialize(context?: EvaluationContext | undefined): Promise<void> {
+  async initialize(): Promise<void> {
     if (!this.fbClient) {
       // The client could not be constructed.
       if (this.clientConstructionError) {
         throw this.clientConstructionError;
       }
       throw new Error("Unknown problem encountered during initialization");
-    }
-
-    if (context) {
-      const _user: IUser | undefined = translateContext(context);
-      if (_user) {
-        this.fbClient.identify(_user);
-      }
     }
 
     try {
@@ -100,57 +91,48 @@ export class FbProvider implements Provider {
     flagKey: string,
     defaultValue: boolean
   ): ResolutionDetails<boolean> {
-    // code to evaluate a boolean
-    if (this.fbClient.variation(flagKey, defaultValue) !== undefined) {
-      return translateResult(
-        this.fbClient.variation(flagKey, defaultValue),
-        StandardResolutionReasons.TARGETING_MATCH
-      );
-    } else {
+    const variation = this.fbClient.variation(flagKey, defaultValue);
+    if (typeof variation !== "boolean") {
       logger.log(ErrorCode.GENERAL);
       return wrongTypeResult(defaultValue);
     }
+
+    return translateResult<boolean>(variation);
   }
 
   resolveStringEvaluation(
     flagKey: string,
     defaultValue: string
   ): ResolutionDetails<string> {
-    if (this.fbClient.variation(flagKey, defaultValue) !== undefined) {
-      return translateResult(
-        this.fbClient.variation(flagKey, defaultValue),
-        StandardResolutionReasons.TARGETING_MATCH
-      );
-    } else {
+    const variation = this.fbClient.variation(flagKey, defaultValue);
+    if (typeof variation !== "string") {
       logger.log(ErrorCode.GENERAL);
       return wrongTypeResult(defaultValue);
     }
+
+    return translateResult<string>(variation);
   }
 
   resolveNumberEvaluation(
     flagKey: string,
     defaultValue: number
   ): ResolutionDetails<number> {
-    if (this.fbClient.variation(flagKey, defaultValue) !== undefined) {
-      return translateResult(
-        this.fbClient.variation(flagKey, defaultValue),
-        StandardResolutionReasons.TARGETING_MATCH,
-      );
-    } else {
+    const variation = this.fbClient.variation(flagKey, defaultValue);
+    if (typeof variation !== "number") {
       logger.log(ErrorCode.GENERAL);
       return wrongTypeResult(defaultValue);
     }
+
+    return translateResult<number>(variation);
   }
 
   resolveObjectEvaluation<T extends JsonValue>(
     flagKey: string,
     defaultValue: T
   ): ResolutionDetails<T> {
-    // code to evaluate a boolean
     if (this.fbClient.variation(flagKey, defaultValue) !== undefined) {
-      return translateResult(
-        this.fbClient.variation(flagKey, defaultValue),
-        StandardResolutionReasons.TARGETING_MATCH
+      return translateResult<T>(
+        this.fbClient.variation(flagKey, defaultValue)
       );
     } else {
       logger.log(ErrorCode.GENERAL);
@@ -162,6 +144,7 @@ export class FbProvider implements Provider {
     _oldContext: EvaluationContext,
     newContext: EvaluationContext
   ): Promise<void> {
+    console.log('onchange');
     // update the context on the featbit client, this is so it does not have to be checked on each evaluation
     const _user: IUser | undefined = translateContext(newContext);
     if (_user) {

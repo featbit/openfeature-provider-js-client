@@ -3,8 +3,8 @@ import { OpenFeature, ProviderEvents } from '@openfeature/web-sdk';
 import { IOption } from "featbit-js-client-sdk";
 
 (async () => {
-   const api = 'http://localhost:5100';
-   const secret = 'w5IHJzoS8UysSkEoV3N0Ogl42JeTw-xkuoZk0R2bRI5g';
+   const streamingUri = 'http://localhost:5100';
+   const sdkKey = 'w5IHJzoS8UysSkEoV3N0Ogl42JeTw-xkuoZk0R2bRI5g';
 
    const user = {
       name: 'the-user',
@@ -12,14 +12,16 @@ import { IOption } from "featbit-js-client-sdk";
    };
 
    const option: IOption = {
-      secret: secret,
-      api: api,
+      secret: sdkKey,
+      api: streamingUri,
       user: user,
    };
 
    const provider = new FbProvider(option);
 
-   await OpenFeature.setContext(user);
+   // uncomment this line if you want to set a different context
+   // await OpenFeature.setContext(user);
+
    await OpenFeature.setProviderAndWait(provider);
 
    OpenFeature.addHandler(ProviderEvents.ConfigurationChanged, (eventDetails) => {
