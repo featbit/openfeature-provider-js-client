@@ -1,6 +1,6 @@
 {
   "name": "@featbit/openfeature-provider-js-client",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A OpenFeature provider implementation for the FeatBit js client SDK",
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",
