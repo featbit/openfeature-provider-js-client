@@ -5,9 +5,8 @@
     "build": "rimraf lib && webpack --mode production && rimraf dist"
   },
   "dependencies": {
-    "@featbit/openfeature-provider-js-client": "^1.0.1",
-    "@openfeature/web-sdk": "^0.4.9",
-    "featbit-js-client-sdk": "^1.0.6"
+    "@featbit/openfeature-provider-js-client": "file:../..",
+    "@openfeature/web-sdk": "^0.4.9"
   },
   "devDependencies": {
     "rimraf": "^5.0.5",

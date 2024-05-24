@@ -1,19 +1,22 @@
 import { FbProvider } from '@featbit/openfeature-provider-js-client';
-import { OpenFeature, ProviderEvents } from '@openfeature/web-sdk';
-import { IOption } from "featbit-js-client-sdk";
+import { EventDetails, OpenFeature, ProviderEvents } from '@openfeature/web-sdk';
+import { IOptions } from "@featbit/js-client-sdk";
 
 (async () => {
-   const streamingUri = 'http://localhost:5100';
-   const sdkKey = 'w5IHJzoS8UysSkEoV3N0Ogl42JeTw-xkuoZk0R2bRI5g';
+   const streamingUri = 'wss://app-eval.featbit.co';
+   const eventsUri = 'https://app-eval.featbit.co';
+   const sdkKey = 'Obg68EqYZk27JTxphPgy7At1aJ8GaAtEaIA1fb3IpuEA';
 
    const user = {
       name: 'the-user',
-      keyId: 'the-user'
+      keyId: 'the-user',
+      customizedProperties: [],
    };
 
-   const option: IOption = {
-      secret: sdkKey,
-      api: streamingUri,
+   const option: IOptions = {
+      sdkKey: sdkKey,
+      streamingUri: streamingUri,
+      eventsUri: eventsUri,
       user: user,
    };
 
@@ -24,14 +27,14 @@ import { IOption } from "featbit-js-client-sdk";
 
    await OpenFeature.setProviderAndWait(provider);
 
-   OpenFeature.addHandler(ProviderEvents.ConfigurationChanged, (eventDetails) => {
+   OpenFeature.addHandler(ProviderEvents.ConfigurationChanged, (eventDetails: EventDetails) => {
       const client = OpenFeature.getClient();
-      const value = client.getBooleanValue('aaa', false);
+      const value = client.getStringValue('robot', 'ChatGPT');
       console.log({...eventDetails, value});
    });
 
    const client = OpenFeature.getClient();
 
-   const value = client.getBooleanValue('aaa', false);
+   const value = client.getStringValue('robot', 'ChatGPT');
    console.log(value);
 })()

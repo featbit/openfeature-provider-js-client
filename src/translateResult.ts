@@ -1,8 +1,8 @@
 import { ResolutionDetails } from "@openfeature/web-sdk";
-import { FeatureFlagValue } from "featbit-js-client-sdk";
+import { FlagValue } from "@featbit/js-client-sdk";
 
 export default function translateResult<T>(
-  result: FeatureFlagValue
+  result: FlagValue
 ): ResolutionDetails<T> {
   const resolution: ResolutionDetails<T> = {
     value: result

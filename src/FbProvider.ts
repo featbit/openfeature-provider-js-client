@@ -10,7 +10,7 @@ import {
   StandardResolutionReasons,
 } from "@openfeature/web-sdk";
 
-import { FB, fbClient, IOption, IUser, logger } from "featbit-js-client-sdk";
+import { BasicLogger, FbClientBuilder, IFbClient, ILogger, IOptions, IUser } from "@featbit/js-client-sdk";
 
 import { translateContext } from "./translateContext";
 import translateResult from "./translateResult";
@@ -31,29 +31,35 @@ function wrongTypeResult<T>(value: T): ResolutionDetails<T> {
 
 // implement the provider interface
 export class FbProvider implements Provider {
+  private readonly logger: ILogger;
+
   // Adds runtime validation that the provider is used with the expected SDK
   public readonly runsOn = "client";
   readonly metadata = {
-    name: "featbit-client-provider",
+    name: "featbit-js-client-provider",
   } as const;
 
-  private readonly fbClient: FB;
+  private readonly fbClient: IFbClient;
   private readonly clientConstructionError: any;
 
   private _status?: ProviderStatus = ProviderStatus.NOT_READY;
   public readonly events = new OpenFeatureEventEmitter();
-  constructor(options: IOption) {
+  constructor(options: IOptions) {
     try {
-      this.fbClient = fbClient;
-      this.fbClient.init(options);
-      this.fbClient.on('ff_update', ({ key }: { key: string }) =>
+      this.logger = options.logger ?? new BasicLogger({
+        level: 'none',
+        destination: console.log
+      });
+
+      this.fbClient = new FbClientBuilder({...options, logger: this.logger}).build();
+      this.fbClient.on('update', (flagKeys: string[]) =>
         this.events.emit(ProviderEvents.ConfigurationChanged, {
-          flagsChanged: [key],
+          flagsChanged: flagKeys,
         })
       );
     } catch (err) {
       this.clientConstructionError = err;
-      logger.log(`Encountered unrecoverable initialization error, ${err}`);
+      this.logger.error(`Encountered unrecoverable initialization error, ${err}`);
       this._status = ProviderStatus.ERROR;
     }
   }
@@ -68,7 +74,7 @@ export class FbProvider implements Provider {
     }
 
     try {
-      await this.fbClient.waitUntilReady();
+      await this.fbClient.waitForInitialization();
       this._status = ProviderStatus.READY;
     } catch (error) {
       this._status = ProviderStatus.ERROR;
@@ -91,9 +97,9 @@ export class FbProvider implements Provider {
     flagKey: string,
     defaultValue: boolean
   ): ResolutionDetails<boolean> {
-    const variation = this.fbClient.variation(flagKey, defaultValue);
+    const variation = this.fbClient.boolVariation(flagKey, defaultValue);
     if (typeof variation !== "boolean") {
-      logger.log(ErrorCode.GENERAL);
+      this.logger.debug(ErrorCode.GENERAL);
       return wrongTypeResult(defaultValue);
     }
 
@@ -104,9 +110,9 @@ export class FbProvider implements Provider {
     flagKey: string,
     defaultValue: string
   ): ResolutionDetails<string> {
-    const variation = this.fbClient.variation(flagKey, defaultValue);
+    const variation = this.fbClient.stringVariation(flagKey, defaultValue);
     if (typeof variation !== "string") {
-      logger.log(ErrorCode.GENERAL);
+      this.logger.debug(ErrorCode.GENERAL);
       return wrongTypeResult(defaultValue);
     }
 
@@ -117,9 +123,9 @@ export class FbProvider implements Provider {
     flagKey: string,
     defaultValue: number
   ): ResolutionDetails<number> {
-    const variation = this.fbClient.variation(flagKey, defaultValue);
+    const variation = this.fbClient.numberVariation(flagKey, defaultValue);
     if (typeof variation !== "number") {
-      logger.log(ErrorCode.GENERAL);
+      this.logger.debug(ErrorCode.GENERAL);
       return wrongTypeResult(defaultValue);
     }
 
@@ -130,12 +136,11 @@ export class FbProvider implements Provider {
     flagKey: string,
     defaultValue: T
   ): ResolutionDetails<T> {
-    if (this.fbClient.variation(flagKey, defaultValue) !== undefined) {
-      return translateResult<T>(
-        this.fbClient.variation(flagKey, defaultValue)
-      );
+    const variation = this.fbClient.jsonVariation(flagKey, defaultValue);
+    if (variation !== undefined) {
+      return translateResult<T>(variation);
     } else {
-      logger.log(ErrorCode.GENERAL);
+      this.logger.debug(ErrorCode.GENERAL);
       return wrongTypeResult(defaultValue);
     }
   }
@@ -145,7 +150,7 @@ export class FbProvider implements Provider {
     newContext: EvaluationContext
   ): Promise<void> {
     // update the context on the featbit client, this is so it does not have to be checked on each evaluation
-    const _user: IUser | undefined = translateContext(newContext);
+    const _user: IUser | undefined = translateContext(newContext, this.logger);
     if (_user) {
       await this.fbClient.identify(_user);
     } else {
@@ -153,7 +158,7 @@ export class FbProvider implements Provider {
     }
   }
 
-  public getClient(): FB {
+  public getClient(): IFbClient {
     return this.fbClient;
   }
 
@@ -163,7 +168,7 @@ export class FbProvider implements Provider {
 
   async onClose(): Promise<void> {
     // code to shut down your
-    await this.fbClient.logout();
+    await this.fbClient.close();
     this._status = ProviderStatus.NOT_READY;
   }
 }
