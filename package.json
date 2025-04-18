@@ -1,6 +1,6 @@
 {
   "name": "@featbit/openfeature-provider-js-client",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "A OpenFeature provider implementation for the FeatBit js client SDK",
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",
@@ -26,7 +26,7 @@
   },
   "peerDependencies": {
     "@openfeature/web-sdk": ">=0.4.0",
-    "@featbit/js-client-sdk": "^3.0.9"
+    "@featbit/js-client-sdk": "^3.0.12"
   },
   "devDependencies": {
     "@openfeature/web-sdk": "^0.4.9",
