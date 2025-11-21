@@ -17,6 +17,7 @@ import { IOptions } from "@featbit/js-client-sdk";
       sdkKey: sdkKey,
       streamingUri: streamingUri,
       eventsUri: eventsUri,
+      logLevel: 'debug',
       user: user,
    };
 
