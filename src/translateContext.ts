@@ -3,13 +3,13 @@ import { EvaluationContext } from "@openfeature/web-sdk";
 
 const builtInKeys = ["key", "name", "custom", "targetingKey"];
 
-export function translateContext(evaluationContext: EvaluationContext, logger: ILogger): IUser | undefined {
+export function translateContext(evaluationContext: EvaluationContext, logger?: ILogger): IUser | undefined {
   const custom: IContextProperty[] = (evaluationContext.custom || []) as unknown as IContextProperty[];
   const name = evaluationContext.name as string || "";
   const key: string = evaluationContext.targetingKey || evaluationContext.key as string || evaluationContext.keyId as string || '';
 
   if (key === "") {
-    logger.error(
+    logger?.error(
       "The EvaluationContext must contain either a 'targetingKey' or a 'key' or a 'keyId' and the " +
         "type must be a string."
     );

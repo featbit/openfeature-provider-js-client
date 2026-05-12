@@ -45,6 +45,15 @@ export class FbProvider implements Provider {
   private _status?: ProviderStatus = ProviderStatus.NOT_READY;
   public readonly events = new OpenFeatureEventEmitter();
   constructor(options: IOptions) {
+    // Initialise the logger up-front so it is available on both the happy path
+    // and the catch block below. Without this, `this.logger` would be undefined
+    // whenever fbClient construction succeeds, and any later call that uses it
+    // (e.g. translateContext via onContextChange) would throw.
+    this.logger = options.logger ?? new BasicLogger({
+      level: options.logLevel || 'none',
+      destination: console.log
+    });
+
     try {
       this.fbClient = new FbClientBuilder({...options}).build();
       this.fbClient.on('update', (flagKeys: string[]) =>
@@ -54,11 +63,6 @@ export class FbProvider implements Provider {
       );
     } catch (err) {
       this.clientConstructionError = err;
-      this.logger = this.fbClient?.logger || (options.logger ?? new BasicLogger({
-        level: options.logLevel || 'none',
-        destination: console.log
-      }));
-
       this.logger.error(`Encountered unrecoverable initialization error, ${err}`);
       this._status = ProviderStatus.ERROR;
     }
