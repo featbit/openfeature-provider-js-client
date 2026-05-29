@@ -55,7 +55,7 @@ export class FbProvider implements Provider {
     });
 
     try {
-      this.fbClient = new FbClientBuilder({...options}).build();
+      this.fbClient = new FbClientBuilder({...options, logger: this.logger}).build();
       this.fbClient.on('update', (flagKeys: string[]) =>
         this.events.emit(ProviderEvents.ConfigurationChanged, {
           flagsChanged: flagKeys,
