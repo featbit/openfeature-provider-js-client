@@ -7,7 +7,7 @@
 		"esModuleInterop": true,
 		"target": "es5",
 		"moduleResolution": "NodeNext",
-		"lib": [ "es2019", "dom" ],
+		"lib": [ "es2022", "dom" ],
 		"sourceMap": true,
 		"outDir": "dist",
 		"rootDir": "src",
