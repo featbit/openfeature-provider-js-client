@@ -5,7 +5,7 @@ import { IOptions } from "@featbit/js-client-sdk";
 (async () => {
    const streamingUri = 'wss://app-eval.featbit.co';
    const eventsUri = 'https://app-eval.featbit.co';
-   const sdkKey = '3QFLBQibTE6i1duL1WAK2A227SK-9N8k-9VqurJDE_Qw';
+   const sdkKey = 'Obg68EqYZk27JTxphPgy7At1aJ8GaAtEaIA1fb3IpuEA';
 
    const user = {
       name: 'the-user',
