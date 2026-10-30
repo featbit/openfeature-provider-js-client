@@ -18,6 +18,7 @@ jest.mock('@featbit/js-client-sdk', () => {
     public stringVariation = jest.fn();
     public numberVariation = jest.fn();
     public jsonVariation = jest.fn();
+    public track = jest.fn();
   }
 
   class FakeFbClientBuilder {
@@ -34,8 +35,56 @@ jest.mock('@featbit/js-client-sdk', () => {
 });
 
 import { FbProvider } from '../src/FbProvider';
+import { OpenFeature } from '@openfeature/web-sdk';
 
 describe('FbProvider', () => {
+  describe('tracking through OpenFeature', () => {
+    afterEach(async () => {
+      await OpenFeature.clearProviders();
+      await OpenFeature.setContext({});
+    });
+
+    it.each([
+      ['without details', undefined, undefined],
+      ['with a metric', { value: 99.5 }, 99.5],
+      ['with a zero metric', { value: 0 }, 0],
+      ['with custom fields', { value: 10, currency: 'EUR' }, 10],
+      ['with only custom fields', { currency: 'EUR' }, undefined],
+    ])('%s forwards the event to FeatBit', async (_name, details, expectedValue) => {
+      const provider = new FbProvider({
+        sdkKey: 'test-sdk-key',
+        streamingUri: 'wss://example.invalid',
+        eventsUri: 'https://example.invalid',
+      } as any);
+      await OpenFeature.setProviderAndWait(provider);
+
+      const result = OpenFeature.getClient().track('purchase', details);
+
+      expect(result).toBeUndefined();
+      expect(provider.getClient().track).toHaveBeenCalledTimes(1);
+      expect(provider.getClient().track).toHaveBeenCalledWith('purchase', expectedValue);
+      expect(provider.getClient().identify).not.toHaveBeenCalled();
+    });
+
+    it('tracks after reconciling a context change without identifying again', async () => {
+      const provider = new FbProvider({
+        sdkKey: 'test-sdk-key',
+        streamingUri: 'wss://example.invalid',
+        eventsUri: 'https://example.invalid',
+      } as any);
+      await OpenFeature.setProviderAndWait(provider);
+      await OpenFeature.setContext({ targetingKey: 'user-123' });
+
+      OpenFeature.getClient().track('purchase', { value: 1 });
+
+      expect(provider.getClient().identify).toHaveBeenCalledTimes(1);
+      expect(provider.getClient().identify).toHaveBeenCalledWith({
+        keyId: 'user-123', name: '', customizedProperties: [],
+      });
+      expect(provider.getClient().track).toHaveBeenCalledWith('purchase', 1);
+    });
+  });
+
   describe('onContextChange (regression: issue #6)', () => {
     it('does not throw when the new context is missing a targeting key (happy-path construction)', async () => {
       // Happy-path construction: previously, this left `this.logger` undefined,

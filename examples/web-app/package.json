@@ -6,7 +6,7 @@
   },
   "dependencies": {
     "@featbit/openfeature-provider-js-client": "file:../..",
-    "@openfeature/web-sdk": "^0.4.9"
+    "@openfeature/web-sdk": "^1.10.0"
   },
   "devDependencies": {
     "rimraf": "^5.0.5",
