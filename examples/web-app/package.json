@@ -6,10 +6,11 @@
   },
   "dependencies": {
     "@featbit/openfeature-provider-js-client": "file:../..",
-    "@openfeature/web-sdk": "^0.4.9"
+    "@openfeature/web-sdk": "^1.10.0"
   },
   "devDependencies": {
     "rimraf": "^5.0.5",
+    "terser-webpack-plugin": "^5.3.10",
     "ts-loader": "^9.5.1",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4"

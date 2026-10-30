@@ -8,6 +8,7 @@ import {
   ProviderStatus,
   ResolutionDetails,
   StandardResolutionReasons,
+  TrackingEventDetails,
 } from "@openfeature/web-sdk";
 
 import { BasicLogger, FbClientBuilder, IFbClient, ILogger, IOptions, IUser } from "@featbit/js-client-sdk";
@@ -160,6 +161,16 @@ export class FbProvider implements Provider {
     } else {
       return Promise.reject(new Error("Something went wrong"));
     }
+  }
+
+  track(
+    trackingEventName: string,
+    _context: EvaluationContext,
+    trackingEventDetails?: TrackingEventDetails
+  ): void {
+    // The web SDK reconciles user changes through onContextChange.
+    // FeatBit tracks against that current user and accepts only a numeric value.
+    this.fbClient.track(trackingEventName, trackingEventDetails?.value);
   }
 
   public getClient(): IFbClient {

@@ -38,4 +38,8 @@ import { IOptions } from "@featbit/js-client-sdk";
 
    const value = client.getStringValue('robot', 'ChatGPT');
    console.log(value);
+
+   // Track user actions through OpenFeature. An omitted value defaults to 1.
+   client.track('checkout-started');
+   client.track('purchase', { value: 99.5 });
 })()
