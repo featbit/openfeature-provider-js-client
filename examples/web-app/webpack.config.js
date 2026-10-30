@@ -1,4 +1,5 @@
 const path = require('path');
+const TerserPlugin = require('terser-webpack-plugin');
 
 const baseConfig = {
     entry: {
@@ -25,7 +26,17 @@ const baseConfig = {
         globalObject: 'this',
     },
     optimization: {
-        minimize: true
+        minimize: true,
+        minimizer: [
+            new TerserPlugin({
+                extractComments: false,
+                terserOptions: {
+                    format: {
+                        comments: /@preserve|@license|@cc_on|^!/i,
+                    },
+                },
+            }),
+        ],
     },
 };
 

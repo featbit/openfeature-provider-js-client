@@ -5,7 +5,7 @@ import { IOptions } from "@featbit/js-client-sdk";
 (async () => {
    const streamingUri = 'wss://app-eval.featbit.co';
    const eventsUri = 'https://app-eval.featbit.co';
-   const sdkKey = 'Obg68EqYZk27JTxphPgy7At1aJ8GaAtEaIA1fb3IpuEA';
+   const sdkKey = '3QFLBQibTE6i1duL1WAK2A227SK-9N8k-9VqurJDE_Qw';
 
    const user = {
       name: 'the-user',
@@ -38,4 +38,8 @@ import { IOptions } from "@featbit/js-client-sdk";
 
    const value = client.getStringValue('robot', 'ChatGPT');
    console.log(value);
+
+   // Track user actions through OpenFeature. An omitted value defaults to 1.
+   client.track('checkout-started');
+   client.track('purchase', { value: 99.5 });
 })()
